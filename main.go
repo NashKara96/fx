@@ -9,7 +9,7 @@ import (
 // Hook represents a lifecycle hook function.
 type Hook func(context.Context) error
 
-// Lifecycle manages OnStart and OnStop hooks.
+// Lifecycle manages OnStop hooks for graceful shutdown.
 type Lifecycle struct {
 	onStopHooks []Hook
 }
@@ -31,8 +31,8 @@ func (l *Lifecycle) AppendOnStop(hook Hook) {
 // continues — remaining hooks are NOT skipped. All errors are combined
 // and returned as a single aggregated error.
 //
-// The context is respected: if ctx is cancelled, hooks still run but
-// each receives the cancelled context.
+// The context is respected: if ctx is canceled, hooks still run but
+// each receives the canceled context.
 func (l *Lifecycle) Stop(ctx context.Context) error {
 	var errs []error
 

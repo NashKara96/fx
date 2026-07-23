@@ -124,13 +124,21 @@ func TestStop_ReverseOrderPreserved(t *testing.T) {
 		})
 	}
 
-	l.Stop(context.Background())
+	err := l.Stop(context.Background())
 
+	// Assert all hooks ran
+	if len(executed) != 5 {
+		t.Fatalf("expected 5 hooks to execute, got %d", len(executed))
+	}
 	expected := []int{5, 4, 3, 2, 1}
 	for i, v := range executed {
 		if v != expected[i] {
 			t.Errorf("position %d: expected %d, got %d", i, expected[i], v)
 		}
+	}
+	// All hooks returned nil, so Stop should return nil
+	if err != nil {
+		t.Errorf("expected nil error when all hooks succeed, got %v", err)
 	}
 }
 
@@ -187,6 +195,7 @@ func TestStop_FirstHookErrorDoesNotBlockOthers(t *testing.T) {
 
 	err := l.Stop(context.Background())
 
+	// Assert all hooks ran
 	if len(executed) != 2 {
 		t.Fatalf("expected 2 hooks to execute, got %d", len(executed))
 	}
@@ -194,6 +203,7 @@ func TestStop_FirstHookErrorDoesNotBlockOthers(t *testing.T) {
 	if executed[0] != 2 || executed[1] != 1 {
 		t.Errorf("expected order [2, 1], got %v", executed)
 	}
+	// Assert error was returned
 	if !errors.Is(err, context.Canceled) {
 		t.Errorf("expected context.Canceled in error, got %v", err)
 	}
